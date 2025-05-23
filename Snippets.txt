@@ -1,0 +1,172 @@
+#angularrigidjoint
+JointHelper.CreateAngularRigidJoint(string partKeyToBeRotated, string sPortNameToBeRotated, string partKey_Fixed, string sPortName_Fixed, Vector XYZOffset, Vector XYZRotate);
+
+# GetPropertyValue-parts
+ componentDictionary["PARTKEY"].GetPropertyValueDouble("INTERFACE", "ATTRIBUTE");
+
+# setProperyValue
+componentDictionary["PARTKEY"].SetPropertyValue("Property/Value", "INTERFACE", "ATTRIBUTE");
+
+#rigidjoint
+CreateRigidJoint(string partKeyA, string sPortNameA, string partKeyB, string sPortNameB, Plane ePlaneOfPartA, Plane ePlaneOfPartB, Axis eAxisInPlaneA, Axis eAxisInPlaneB, double dPlaneOffset, double dAxisOffset, double dOriginOffset)
+
+#PropertyValueCodelist -getpropertyvalue
+(PropertyValueCodelist)support.GetPropertyValue("INTERFACE", "ATTRIBUTE");
+
+#AddParts
+parts.Add(new PartInfo("PARTKEY", partclassNumber));
+
+#H&S Template
+// Required .NET Framework namespaces
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Xml.Linq;
+using System.Reflection;
+
+// Custom Smart3D namespaces – replace or modify if needed
+using Ingr.SP3D.Common.Middle;
+
+// Static imports (edit based on actual helper class locations)
+using static TCM.SP3D.Content.Supports.TCMServices;
+
+namespace YourNamespaceHere // <<< REPLACE with your actual namespace
+{
+    public class YourSupportClassNameHere : CustomSupportDefinition, ICustomHgrBOMDescription // <<< REPLACE class name
+    {
+        // Declare support-related fields
+
+        double SuppportLength = 0;
+
+        public override Collection<PartInfo> Parts
+        {
+            get
+            {
+                try
+                {
+                    List<PartInfo> parts = new List<PartInfo>();
+                    Support support = SupportHelper.Support;
+
+                    // Get part from relationship
+                    BusinessObject part = support.GetRelationship("OccAssyHasPart", "OccAssyHasPart_Part").TargetObjects[0];
+
+                    partclassNumber = part.GetPropertyValueString("INTERFACE", "ATTRIBUTE"); // <<< Replace with actual interface/attribute
+
+                    parts.Add(new PartInfo("YourPartKeyHere", partclassNumber)); // <<< REPLACE "YourPartKeyHere"
+
+                    return new Collection<PartInfo>(parts);
+                }
+                catch (Exception e)
+                {
+                    Type myType = this.GetType();
+                    throw new CmnException($"Error in Get Assembly Catalog Parts: {myType.FullName}. Error: {e.Message}", e);
+                }
+            }
+        }
+
+        public override void ConfigureSupport(Collection<SupportComponent> oSupCompColl)
+        {
+            try
+            {
+                //	Variable declaration and initialization using a static property
+                Support support = SupportHelper.Support;
+
+               // Generic dictionary variable declaration and initialization using a static property
+                Dictionary<string, SupportComponent> componentDictionary = SupportHelper.SupportComponentDictionary;
+
+
+                // Declare support-related fields
+                double SuppportLength = 0;
+
+                // Add joint logic — customize joint key names and values as needed
+                JointHelper.CreateAngularRigidJoint(string partKeyToBeRotated, string sPortNameToBeRotated, string partKey_Fixed, string sPortName_Fixed, Vector XYZOffset, Vector XYZRotate);
+
+            }
+            catch (Exception e)
+            {
+                Type myType = this.GetType();
+                throw new CmnException($"Error in ConfigureSupport: {myType.FullName}. Error: {e.Message}", e);
+            }
+        }
+
+        public override int ConfigurationCount => 4; // <<< Change based on the number of configurations
+
+        public override Collection<ConnectionInfo> SupportedConnections
+        {
+            get
+            {
+                try
+                {
+                    Collection<ConnectionInfo> routeConnections = new Collection<ConnectionInfo>();
+                    for (int i = 0; i < SupportHelper.SupportedObjects.Count; i++)
+                    {
+                        routeConnections.Add(new ConnectionInfo(HSECTION, i + 1));
+                    }
+                    return routeConnections;
+                }
+                catch (Exception e)
+                {
+                    throw new CmnException($"Error in SupportedConnections: {e.Message}", e);
+                }
+            }
+        }
+
+        public override Collection<ConnectionInfo> SupportingConnections
+        {
+            get
+            {
+                try
+                {
+                    Collection<ConnectionInfo> structConnections = new Collection<ConnectionInfo>();
+                    structConnections.Add(new ConnectionInfo(VSECTION1, 1));
+                    return structConnections;
+                }
+                catch (Exception e)
+                {
+                    throw new CmnException($"Error in SupportingConnections: {e.Message}", e);
+                }
+            }
+        }
+
+        #region ICustomHgrBOMDescription Members
+
+        public string BOMDescription(BusinessObject oSupportOrComponent)
+        {
+            try
+            {
+                Support support = SupportHelper.Support;
+                Part supportDef = support.SupportDefinition;
+
+                //Min Max Validation
+               string warningMsg += "propertyA " is exceeding Maximum "propertyB " + "(" + propertyAmax + ")" + "\r\n";
+
+                support.SetPropertyValue(warningMsg, "INTERFACE", "ATTRIBUTE");
+
+                if (!string.IsNullOrEmpty(warningMsg))
+                {
+                    warningMsg = "Warning : " + "\n" + warningMsg;
+                    MiddleServiceProvider.ErrorLogger.Log(0, "", "", "USERWARNINGMESSAGE", warningMsg, "", "", 0);
+                }
+
+
+
+                // Define how the BOM string is built — customize tokens
+                string bOMDescription = $"{"SupportNumber"}-{"Dimensions/other Attributes"}; // <<< Customize A1, B, C, D as needed;
+                return bOMDescription;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error generating BOM description", e);
+            }
+        }
+
+        #endregion
+    }
+}
+
+
+
+
+
+
